@@ -1,9 +1,11 @@
+import { Message } from './models/message';
 import * as bodyParser from "body-parser";
 import * as cookieParser from "cookie-parser";
 import * as express from "express";
 import * as logger from "morgan";
 import * as path from "path";
 import * as http from 'http';
+import * as socketio from 'socket.io';
 
 import createError = require('http-errors');
 import errorHandler = require("errorhandler");
@@ -22,6 +24,7 @@ export class Server {
 
   public app: express.Application;
   public httpServer: http.Server;
+  public io: socketio.Socket;
 
   /**
    * Bootstrap the application.
@@ -46,7 +49,7 @@ export class Server {
     this.app = express();
 
     this.httpServer = new http.Server(this.app);
-    // import socketIO = require('socket.io')(this.httpServer);
+    this.configSocket(this.httpServer);
 
     //configure application
     this.config();
@@ -124,57 +127,35 @@ export class Server {
 
     this.app.use(router);
   }
+
+  public configSocket(server) {
+    this.io = require('socket.io')(server);
+    
+    this.io.on('connection', function(socket: any){
+      // Whenever user connects
+      console.log('user connected');
+
+      // Log whenever a client disconnects from our websocket server
+      socket.on('disconnect', function(){
+          console.log('user disconnected');
+      });
+
+      // When we receive a 'message' event from our client, print out
+      // the contents of that message and then echo it back to our client
+      // using `io.emit()`
+      socket.on('message', (msg: string) => {
+        const message = JSON.parse(msg) as Message;
+        console.log("Message Received: " + message);
+        setTimeout(() => {
+          if (message.isBroadcast) {
+            this.io.emit(Server.createMessage(message.content, true, message.sender));
+          }
+        });
+      });
+    });
+  }
+
+  public static createMessage(content: string, isBroadcast = false, sender = 'NS'): string {
+    return JSON.stringify(new Message(content, isBroadcast, sender));
+  }
 }
-
-// var app = express();
-
-// io.on('connection', function(socket){
-//   // Whenever user connects
-//   console.log('user connected');
-
-//   // Log whenever a client disconnects from our websocket server
-//   socket.on('disconnect', function(){
-//       console.log('user disconnected');
-//   });
-
-//   // When we receive a 'message' event from our client, print out
-//   // the contents of that message and then echo it back to our client
-//   // using `io.emit()`
-//   socket.on('message', (message) => {
-//       console.log("Message Received: " + message);
-//       io.emit('message', {type:'new-message', text: message});    
-//   });
-// });
-
-// // view engine setup
-// app.set('views', path.join(__dirname, 'views'));
-// app.set('view engine', 'ejs');
-
-// app.use(logger('dev'));
-// app.use(express.json());
-// app.use(express.urlencoded({ extended: false }));
-// app.use(cookieParser());
-// app.use(express.static(path.join(__dirname, 'public')));
-
-// app.use('/', indexRouter);
-// app.use('/users', usersRouter);
-// app.use('/ctm', ctmRouter);
-
-// // catch 404 and forward to error handler
-// app.use(function(req, res, next) {
-//   next(createError(404));
-// });
-
-// // error handler
-// app.use(function(err, req, res, next) {
-//   // set locals, only providing error in development
-//   res.locals.message = err.message;
-//   res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-//   // render the error page
-//   res.status(err.status || 500);
-//   res.render('error');
-// });
-
-// module.exports = app;
- 

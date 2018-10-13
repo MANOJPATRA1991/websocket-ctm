@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const message_1 = require("./models/message");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const express = require("express");
@@ -18,6 +19,7 @@ class Server {
     constructor() {
         this.app = express();
         this.httpServer = new http.Server(this.app);
+        this.configSocket(this.httpServer);
         this.config();
         this.routes();
         this.api();
@@ -47,6 +49,27 @@ class Server {
         users_1.UserRoute.create(router);
         ctm_1.CTMRoute.create(router);
         this.app.use(router);
+    }
+    configSocket(server) {
+        this.io = require('socket.io')(server);
+        this.io.on('connection', function (socket) {
+            console.log('user connected');
+            socket.on('disconnect', function () {
+                console.log('user disconnected');
+            });
+            socket.on('message', (msg) => {
+                const message = JSON.parse(msg);
+                console.log("Message Received: " + message);
+                setTimeout(() => {
+                    if (message.isBroadcast) {
+                        this.io.emit(Server.createMessage(message.content, true, message.sender));
+                    }
+                });
+            });
+        });
+    }
+    static createMessage(content, isBroadcast = false, sender = 'NS') {
+        return JSON.stringify(new message_1.Message(content, isBroadcast, sender));
     }
 }
 exports.Server = Server;
