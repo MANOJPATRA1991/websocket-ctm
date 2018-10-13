@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "NODE_ENV=development nodemon ./bin/www",
     "grunt": "grunt",
-    "start": "npm run grunt && node ./bin/www"
+    "prestart": "npm run grunt",
+    "start": "node ./bin/www"
   },
   "dependencies": {
     "@types/socket.io": "^1.4.38",
