@@ -5,6 +5,7 @@
 var server = require("../dist/server");
 var debug = require("debug")("express:server");
 var http = require("http");
+var SocketServer = require('ws').Server;
 
 //create http server
 var httpPort = normalizePort(process.env.PORT || 8080);
@@ -21,6 +22,8 @@ s.httpServer.on("error", onError);
 
 //start listening on port
 s.httpServer.on("listening", onListening);
+
+s.wss = new SocketServer({ server });
 
 s.configSocket(s.httpServer);
 

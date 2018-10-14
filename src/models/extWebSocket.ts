@@ -1,6 +1,6 @@
-import * as WebSocket from 'ws';
+import * as SocketServer from 'ws';
 
-export default interface ExtWebSocket extends WebSocket {
+export default interface ExtWebSocket extends SocketServer {
     isAlive: boolean;
     id: number;
 }

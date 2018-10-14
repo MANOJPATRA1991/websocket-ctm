@@ -5,7 +5,7 @@ import * as express from "express";
 import * as logger from "morgan";
 import * as path from "path";
 import * as http from 'http';
-import * as WebSocket from 'ws';
+import * as SocketServer from 'ws';
 
 import createError = require('http-errors');
 import errorHandler = require("errorhandler");
@@ -27,7 +27,7 @@ export class Server {
 
   public app: express.Application;
   public httpServer: http.Server;
-  public wss: WebSocket.Server;
+  public wss: SocketServer.Server;
 
   /**
    * Bootstrap the application.
@@ -131,13 +131,11 @@ export class Server {
   }
 
   public configSocket(server) {
-    this.wss = new WebSocket.Server({ server });
-    
     this.wss.on('open', () => {
       console.log('You are logged');
     });
     
-    this.wss.on('connection', (ws: WebSocket) => {
+    this.wss.on('connection', (ws: SocketServer) => {
       console.log('live');
       const extWs = ws as ExtWebSocket;
       console.log(this.wss.clients);
@@ -178,7 +176,7 @@ export class Server {
     });
     
     setInterval(() => {
-      this.wss.clients.forEach((ws: WebSocket) => {
+      this.wss.clients.forEach((ws: SocketServer) => {
         const extWs = ws as ExtWebSocket;
 
         if (!extWs.isAlive) return ws.terminate();
