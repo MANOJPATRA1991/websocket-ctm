@@ -12,7 +12,7 @@ export class CTMRoute {
             console.log(users);
 
             if (users[call_log.agent.email]) {
-                users[call_log.agent.email].emit('call_started', JSON.stringify(call_log));
+                users[call_log.agent.email].send(JSON.stringify(call_log));
             }
 
             res.status(200).json({
