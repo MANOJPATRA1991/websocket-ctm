@@ -55,10 +55,10 @@ class Server {
         this.wss.on('open', () => {
             console.log('You are logged');
         });
-        console.log(this.wss);
         this.wss.on('connection', (ws) => {
             console.log('live');
             const extWs = ws;
+            console.log(this.wss.clients);
             extWs.isAlive = true;
             ws.on('pong', () => {
                 extWs.isAlive = true;

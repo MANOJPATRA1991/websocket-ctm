@@ -137,12 +137,10 @@ export class Server {
       console.log('You are logged');
     });
     
-    console.log(this.wss);
-    
     this.wss.on('connection', (ws: WebSocket) => {
       console.log('live');
       const extWs = ws as ExtWebSocket;
-  
+      console.log(this.wss.clients);
       extWs.isAlive = true;
   
       ws.on('pong', () => {
