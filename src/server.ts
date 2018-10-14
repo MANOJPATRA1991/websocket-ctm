@@ -125,12 +125,12 @@ export class Server {
 
     IndexRoute.create(router);
     UserRoute.create(router);
-    CTMRoute.create(router);
+    CTMRoute.create(router, this.wss);
 
     this.app.use(router);
   }
 
-  public configSocket(server) {
+  public configSocket() {
     this.wss.on('open', () => {
       console.log('You are logged');
     });
