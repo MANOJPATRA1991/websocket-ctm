@@ -6,7 +6,6 @@ const cookieParser = require("cookie-parser");
 const express = require("express");
 const logger = require("morgan");
 const path = require("path");
-const WebSocket = require("ws");
 const errorHandler = require("errorhandler");
 const methodOverride = require("method-override");
 const routes_1 = require("./routes");
@@ -51,7 +50,6 @@ class Server {
         this.app.use(router);
     }
     configSocket(server) {
-        this.wss = new WebSocket.Server({ server });
         this.wss.on('open', () => {
             console.log('You are logged');
         });

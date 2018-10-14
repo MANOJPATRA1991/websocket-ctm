@@ -23,9 +23,9 @@ s.httpServer.on("error", onError);
 //start listening on port
 s.httpServer.on("listening", onListening);
 
-s.wss = new SocketServer({ server });
+s.wss = new SocketServer({ server: s.httpServer });
 
-s.configSocket(s.httpServer);
+s.configSocket();
 
 // var wss = new WebSocket.Server({
 //   server: httpServer
