@@ -9,6 +9,8 @@ export class CTMRoute {
             console.log(req.body);
             let call_log = req.body;
 
+            console.log(users);
+
             if (users[call_log.agent.email]) {
                 users[call_log.agent.email].emit('call_started', JSON.stringify(call_log));
             }
