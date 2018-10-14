@@ -15,7 +15,7 @@ export class CTMRoute {
             console.log(users);
 
             if (users[call_log.agent.email]) {
-                users[call_log.agent.email].send(new Message(JSON.stringify(call_log), false, 'CTM'));
+                users[call_log.agent.email].send(JSON.stringify(new Message(JSON.stringify(call_log), false, 'CTM')));
             } else {
                 let url = `https://api.calltrackingmetrics.com/api/v1/accounts/${Constants.account_id}/calls/${call_log.id}/endcall`;
                 let username = Constants.account_username;
