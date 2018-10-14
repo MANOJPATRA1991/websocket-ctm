@@ -6,6 +6,7 @@ import * as logger from "morgan";
 import * as path from "path";
 import * as http from 'http';
 import * as socketio from 'socket.io';
+import * as WebSocket from 'ws';
 
 import createError = require('http-errors');
 import errorHandler = require("errorhandler");
@@ -48,7 +49,7 @@ export class Server {
     //create expressjs application
     this.app = express();
 
-    this.httpServer = new http.Server(this.app);
+    this.httpServer = http.createServer(this.app);
     this.configSocket(this.httpServer);
 
     //configure application
