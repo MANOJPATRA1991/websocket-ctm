@@ -1,5 +1,5 @@
 import { Constants } from './../models/constants';
-import { Message } from './../../../socket-client/src/app/models/message';
+import { Message } from './../models/message';
 import { NextFunction, Request, Response, Router } from "express";
 import * as SocketServer from 'ws';
 let base64 = require('base-64');
