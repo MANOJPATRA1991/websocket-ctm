@@ -6,7 +6,7 @@ const cookieParser = require("cookie-parser");
 const express = require("express");
 const logger = require("morgan");
 const path = require("path");
-const http = require("http");
+const WebSocket = require("ws");
 const errorHandler = require("errorhandler");
 const methodOverride = require("method-override");
 const routes_1 = require("./routes");
@@ -18,8 +18,8 @@ class Server {
     }
     constructor() {
         this.app = express();
-        this.httpServer = new http.Server(this.app);
-        this.configSocket(this.httpServer);
+        this.httpServer = undefined;
+        this.wss = undefined;
         this.config();
         this.routes();
         this.api();
@@ -51,24 +51,48 @@ class Server {
         this.app.use(router);
     }
     configSocket(server) {
-        this.io = require('socket.io')(server);
-        this.io.on('connection', function (socket) {
-            console.log('user connected');
-            socket.on('disconnect', function () {
-                console.log('user disconnected');
+        this.wss = new WebSocket.Server({ server });
+        this.wss.on('open', () => {
+            console.log('You are logged');
+        });
+        console.log(this.wss);
+        this.wss.on('connection', (ws) => {
+            console.log('live');
+            const extWs = ws;
+            extWs.isAlive = true;
+            ws.on('pong', () => {
+                extWs.isAlive = true;
             });
-            socket.on('message', (msg) => {
+            ws.on('message', (msg) => {
                 const message = JSON.parse(msg);
-                console.log("Message Received: " + message);
                 setTimeout(() => {
                     if (message.isBroadcast) {
-                        this.io.emit(Server.createMessage(message.content, true, message.sender));
+                        this.wss.clients
+                            .forEach(client => {
+                            if (client != ws) {
+                                client.send(this.createMessage(message.content, true, message.sender));
+                            }
+                        });
                     }
-                });
+                    ws.send(this.createMessage(`You sent -> ${message.content}`, message.isBroadcast));
+                }, 1000);
+            });
+            ws.send(this.createMessage('Hi there, I am a WebSocket server'));
+            ws.on('error', (err) => {
+                console.warn(`Client disconnected - reason: ${err}`);
             });
         });
+        setInterval(() => {
+            this.wss.clients.forEach((ws) => {
+                const extWs = ws;
+                if (!extWs.isAlive)
+                    return ws.terminate();
+                extWs.isAlive = false;
+                ws.ping(null, undefined);
+            });
+        }, 10000);
     }
-    static createMessage(content, isBroadcast = false, sender = 'NS') {
+    createMessage(content, isBroadcast = false, sender = 'NS') {
         return JSON.stringify(new message_1.Message(content, isBroadcast, sender));
     }
 }

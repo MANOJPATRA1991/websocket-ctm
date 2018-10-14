@@ -5,7 +5,6 @@ import * as express from "express";
 import * as logger from "morgan";
 import * as path from "path";
 import * as http from 'http';
-import * as socketio from 'socket.io';
 import * as WebSocket from 'ws';
 
 import createError = require('http-errors');
@@ -16,6 +15,9 @@ import { IndexRoute } from './routes';
 import { UserRoute } from './routes/users';
 import { CTMRoute } from './routes/ctm';
 
+import ExtWebSocket from './models/extWebSocket';
+
+
 /**
  * The server.
  *
@@ -25,7 +27,7 @@ export class Server {
 
   public app: express.Application;
   public httpServer: http.Server;
-  public io: socketio.Socket;
+  public wss: WebSocket.Server;
 
   /**
    * Bootstrap the application.
@@ -48,9 +50,8 @@ export class Server {
   constructor() {
     //create expressjs application
     this.app = express();
-
-    this.httpServer = http.createServer(this.app);
-    this.configSocket(this.httpServer);
+    this.httpServer = undefined;
+    this.wss = undefined;
 
     //configure application
     this.config();
@@ -130,36 +131,67 @@ export class Server {
   }
 
   public configSocket(server) {
-    console.log("config socket");
-    this.io = require('socket.io')(server);
+    this.wss = new WebSocket.Server({ server });
     
-    console.log(this.io);
-
-    this.io.on('connection', function(socket: any){
-      // Whenever user connects
-      console.log('user connected');
-
-      // Log whenever a client disconnects from our websocket server
-      socket.on('disconnect', function(){
-          console.log('user disconnected');
-      });
-
-      // When we receive a 'message' event from our client, print out
-      // the contents of that message and then echo it back to our client
-      // using `io.emit()`
-      socket.on('message', (msg: string) => {
-        const message = JSON.parse(msg) as Message;
-        console.log("Message Received: " + message);
-        setTimeout(() => {
-          if (message.isBroadcast) {
-            this.io.emit(Server.createMessage(message.content, true, message.sender));
-          }
-        });
-      });
+    this.wss.on('open', () => {
+      console.log('You are logged');
     });
+    
+    console.log(this.wss);
+    
+    this.wss.on('connection', (ws: WebSocket) => {
+      console.log('live');
+      const extWs = ws as ExtWebSocket;
+  
+      extWs.isAlive = true;
+  
+      ws.on('pong', () => {
+          extWs.isAlive = true;
+      });
+  
+      //connection is up, let's add a simple simple event
+      ws.on('message', (msg: string) => {
+  
+          const message = JSON.parse(msg) as Message;
+  
+          setTimeout(() => {
+              if (message.isBroadcast) {
+                //send back the message to the other clients
+                this.wss.clients
+                .forEach(client => {
+                    if (client != ws) {
+                        client.send(this.createMessage(message.content, true, message.sender));
+                    }
+                });
+              }
+  
+              ws.send(this.createMessage(`You sent -> ${message.content}`, message.isBroadcast));
+  
+          }, 1000);
+  
+      });
+  
+      //send immediatly a feedback to the incoming connection    
+      ws.send(this.createMessage('Hi there, I am a WebSocket server'));
+  
+      ws.on('error', (err) => {
+          console.warn(`Client disconnected - reason: ${err}`);
+      })
+    });
+    
+    setInterval(() => {
+      this.wss.clients.forEach((ws: WebSocket) => {
+        const extWs = ws as ExtWebSocket;
+
+        if (!extWs.isAlive) return ws.terminate();
+
+        extWs.isAlive = false;
+        ws.ping(null, undefined);
+      });
+    }, 10000);
   }
 
-  public static createMessage(content: string, isBroadcast = false, sender = 'NS'): string {
+  public createMessage(content: string, isBroadcast = false, sender = 'NS'): string {
     return JSON.stringify(new Message(content, isBroadcast, sender));
   }
 }

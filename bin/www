@@ -8,20 +8,24 @@ var http = require("http");
 
 //create http server
 var httpPort = normalizePort(process.env.PORT || 8080);
-var app = server.Server.bootstrap().app;
+let s = server.Server.bootstrap();
+var app = s.app;
 app.set("port", httpPort);
-var httpServer = http.createServer(app);
+s.httpServer = new http.createServer(app);
 
 //listen on provided ports
-httpServer.listen(httpPort);
+s.httpServer.listen(httpPort);
 
 //add error handler
-httpServer.on("error", onError);
+s.httpServer.on("error", onError);
 
 //start listening on port
-httpServer.on("listening", onListening);
+s.httpServer.on("listening", onListening);
+s.configSocket(s.httpServer);
 
-
+// var wss = new WebSocket.Server({
+//   server: httpServer
+// });
 /**
  * Normalize a port into a number, string, or false.
  */
@@ -72,7 +76,8 @@ function onError(error) {
  * Event listener for HTTP server "listening" event.
  */
 function onListening() {
-  var addr = httpServer.address();
+  var addr = s.httpServer.address();
+  console.log(addr);
   var bind = typeof addr === "string"
     ? "pipe " + addr
     : "port " + addr.port;
