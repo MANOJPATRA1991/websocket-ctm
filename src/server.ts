@@ -141,7 +141,6 @@ export class Server {
     });
     
     this.wss.on('connection', (ws: SocketServer) => {
-      console.log(ws);
       console.log('live');
       const extWs = ws as ExtWebSocket;
       console.log(this.wss.clients);

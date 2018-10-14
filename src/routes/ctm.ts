@@ -7,7 +7,6 @@ export class CTMRoute {
     public static create(router: Router, wss: SocketServer.Server, users: any) {
         router.post("/ctm", (req: Request, res: Response, next: NextFunction) => {
             console.log(req.body);
-            console.log(wss);
             let call_log = req.body;
 
             if (users[call_log.agent.email]) {
