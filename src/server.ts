@@ -50,11 +50,13 @@ export class Server {
   constructor() {
     //create expressjs application
     this.app = express();
-    this.httpServer = undefined;
-    this.wss = undefined;
+    this.httpServer = new http.Server(this.app);
+    this.wss = new SocketServer.Server({ server: this.httpServer });
 
     //configure application
     this.config();
+
+    this.configSocket();
 
     //add routes
     this.routes();

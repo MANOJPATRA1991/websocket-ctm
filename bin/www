@@ -12,7 +12,6 @@ var httpPort = normalizePort(process.env.PORT || 8080);
 let s = server.Server.bootstrap();
 var app = s.app;
 app.set("port", httpPort);
-s.httpServer = new http.createServer(app);
 
 //listen on provided ports
 s.httpServer.listen(httpPort);
@@ -22,10 +21,6 @@ s.httpServer.on("error", onError);
 
 //start listening on port
 s.httpServer.on("listening", onListening);
-
-s.wss = new SocketServer({ server: s.httpServer });
-
-s.configSocket();
 
 // var wss = new WebSocket.Server({
 //   server: httpServer
