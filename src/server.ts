@@ -129,6 +129,7 @@ export class Server {
   }
 
   public configSocket(server) {
+    console.log("config socket");
     this.io = require('socket.io')(server);
     
     this.io.on('connection', function(socket: any){
