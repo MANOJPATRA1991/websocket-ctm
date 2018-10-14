@@ -28,6 +28,7 @@ export class Server {
   public app: express.Application;
   public httpServer: http.Server;
   public wss: SocketServer.Server;
+  public users: any;
 
   /**
    * Bootstrap the application.
@@ -49,6 +50,8 @@ export class Server {
    */
   constructor() {
     //create expressjs application
+    this.users = {};
+
     this.app = express();
     this.httpServer = new http.Server(this.app);
     this.wss = new SocketServer.Server({ server: this.httpServer });
@@ -127,7 +130,7 @@ export class Server {
 
     IndexRoute.create(router);
     UserRoute.create(router);
-    CTMRoute.create(router, this.wss);
+    CTMRoute.create(router, this.wss, this.users);
 
     this.app.use(router);
   }
@@ -153,41 +156,17 @@ export class Server {
   
           const message = JSON.parse(msg) as Message;
   
-          // setTimeout(() => {
-          //     if (message.isBroadcast) {
-          //       //send back the message to the other clients
-          //       this.wss.clients
-          //       .forEach(client => {
-          //           if (client != ws) {
-          //               client.send(this.createMessage(message.content, true, message.sender));
-          //           }
-          //       });
-          //     }
-  
-          //     ws.send(this.createMessage(`You sent -> ${message.content}`, message.isBroadcast));
-  
-          // }, 1000);
+          setTimeout(() => {
+              ws.send(this.createMessage(`You sent -> ${message.content}`, message.isBroadcast));
+          }, 1000);
+
+          this.users[message.sender] = extWs;
   
       });
   
       //send immediatly a feedback to the incoming connection    
-      // ws.send(this.createMessage('Hi there, I am a WebSocket server'));
-  
-      // ws.on('error', (err) => {
-      //     console.warn(`Client disconnected - reason: ${err}`);
-      // })
+      ws.send(this.createMessage('Hi there, I am a WebSocket server'));
     });
-    
-    // setInterval(() => {
-    //   this.wss.clients.forEach((ws: SocketServer) => {
-    //     const extWs = ws as ExtWebSocket;
-
-    //     if (!extWs.isAlive) return ws.terminate();
-
-    //     extWs.isAlive = false;
-    //     ws.ping(null, undefined);
-    //   });
-    // }, 10000);
   }
 
   public createMessage(content: string, isBroadcast = false, sender = 'NS'): string {
