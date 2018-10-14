@@ -138,6 +138,7 @@ export class Server {
     });
     
     this.wss.on('connection', (ws: SocketServer) => {
+      console.log(ws);
       console.log('live');
       const extWs = ws as ExtWebSocket;
       console.log(this.wss.clients);
@@ -152,41 +153,41 @@ export class Server {
   
           const message = JSON.parse(msg) as Message;
   
-          setTimeout(() => {
-              if (message.isBroadcast) {
-                //send back the message to the other clients
-                this.wss.clients
-                .forEach(client => {
-                    if (client != ws) {
-                        client.send(this.createMessage(message.content, true, message.sender));
-                    }
-                });
-              }
+          // setTimeout(() => {
+          //     if (message.isBroadcast) {
+          //       //send back the message to the other clients
+          //       this.wss.clients
+          //       .forEach(client => {
+          //           if (client != ws) {
+          //               client.send(this.createMessage(message.content, true, message.sender));
+          //           }
+          //       });
+          //     }
   
-              ws.send(this.createMessage(`You sent -> ${message.content}`, message.isBroadcast));
+          //     ws.send(this.createMessage(`You sent -> ${message.content}`, message.isBroadcast));
   
-          }, 1000);
+          // }, 1000);
   
       });
   
       //send immediatly a feedback to the incoming connection    
-      ws.send(this.createMessage('Hi there, I am a WebSocket server'));
+      // ws.send(this.createMessage('Hi there, I am a WebSocket server'));
   
-      ws.on('error', (err) => {
-          console.warn(`Client disconnected - reason: ${err}`);
-      })
+      // ws.on('error', (err) => {
+      //     console.warn(`Client disconnected - reason: ${err}`);
+      // })
     });
     
-    setInterval(() => {
-      this.wss.clients.forEach((ws: SocketServer) => {
-        const extWs = ws as ExtWebSocket;
+    // setInterval(() => {
+    //   this.wss.clients.forEach((ws: SocketServer) => {
+    //     const extWs = ws as ExtWebSocket;
 
-        if (!extWs.isAlive) return ws.terminate();
+    //     if (!extWs.isAlive) return ws.terminate();
 
-        extWs.isAlive = false;
-        ws.ping(null, undefined);
-      });
-    }, 10000);
+    //     extWs.isAlive = false;
+    //     ws.ping(null, undefined);
+    //   });
+    // }, 10000);
   }
 
   public createMessage(content: string, isBroadcast = false, sender = 'NS'): string {
