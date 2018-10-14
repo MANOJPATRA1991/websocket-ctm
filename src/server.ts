@@ -132,6 +132,8 @@ export class Server {
     console.log("config socket");
     this.io = require('socket.io')(server);
     
+    console.log(this.io);
+
     this.io.on('connection', function(socket: any){
       // Whenever user connects
       console.log('user connected');
