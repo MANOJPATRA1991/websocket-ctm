@@ -21,7 +21,7 @@ export class CTMRoute {
                 let username = Constants.account_username;
                 let password = Constants.account_password;
 
-                let headers = new Headers();
+                // let headers = new Headers();
 
                 // headers.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
                 // headers.append("Content-Type", "application/json; charset=utf-8");
