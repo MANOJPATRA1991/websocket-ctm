@@ -29,15 +29,10 @@ export class CTMRoute {
 
                 fetch(url, {
                     method: "POST",
-                    mode: "cors",
-                    cache: "no-cache",
-                    credentials: "same-origin",
                     headers: {
                         "Content-Type": "application/json; charset=utf-8",
                         'Authorization': 'Basic ' + base64.encode(username + ":" + password)
-                    },
-                    redirect: "follow",
-                    referrer: "no-referrer"
+                    }
                 })
                 .then(response => {
                     console.log(response.json());
