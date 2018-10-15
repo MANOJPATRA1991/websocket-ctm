@@ -2,6 +2,7 @@ import { Constants } from './../models/constants';
 import { Message } from './../models/message';
 import { NextFunction, Request, Response, Router } from "express";
 import * as SocketServer from 'ws';
+import fetch from 'node-fetch';
 let base64 = require('base-64');
 
 export class CTMRoute {
