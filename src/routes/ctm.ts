@@ -23,15 +23,18 @@ export class CTMRoute {
 
                 let headers = new Headers();
 
-                headers.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
-                headers.append("Content-Type", "application/json; charset=utf-8");
+                // headers.set('Authorization', 'Basic ' + base64.encode(username + ":" + password));
+                // headers.append("Content-Type", "application/json; charset=utf-8");
 
                 fetch(url, {
                     method: "POST",
                     mode: "cors",
                     cache: "no-cache",
                     credentials: "same-origin",
-                    headers: headers,
+                    headers: {
+                        "Content-Type": "application/json; charset=utf-8",
+                        'Authorization': 'Basic ' + base64.encode(username + ":" + password)
+                    },
                     redirect: "follow",
                     referrer: "no-referrer",
                     body: JSON.stringify({})

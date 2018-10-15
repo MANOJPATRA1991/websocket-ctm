@@ -6,6 +6,8 @@ const cookieParser = require("cookie-parser");
 const express = require("express");
 const logger = require("morgan");
 const path = require("path");
+const http = require("http");
+const SocketServer = require("ws");
 const errorHandler = require("errorhandler");
 const methodOverride = require("method-override");
 const routes_1 = require("./routes");
@@ -16,10 +18,12 @@ class Server {
         return new Server();
     }
     constructor() {
+        this.users = {};
         this.app = express();
-        this.httpServer = undefined;
-        this.wss = undefined;
+        this.httpServer = new http.Server(this.app);
+        this.wss = new SocketServer.Server({ server: this.httpServer });
         this.config();
+        this.configSocket();
         this.routes();
         this.api();
     }
@@ -46,10 +50,10 @@ class Server {
         let router = express.Router();
         routes_1.IndexRoute.create(router);
         users_1.UserRoute.create(router);
-        ctm_1.CTMRoute.create(router);
+        ctm_1.CTMRoute.create(router, this.wss, this.users);
         this.app.use(router);
     }
-    configSocket(server) {
+    configSocket() {
         this.wss.on('open', () => {
             console.log('You are logged');
         });
@@ -64,31 +68,12 @@ class Server {
             ws.on('message', (msg) => {
                 const message = JSON.parse(msg);
                 setTimeout(() => {
-                    if (message.isBroadcast) {
-                        this.wss.clients
-                            .forEach(client => {
-                            if (client != ws) {
-                                client.send(this.createMessage(message.content, true, message.sender));
-                            }
-                        });
-                    }
                     ws.send(this.createMessage(`You sent -> ${message.content}`, message.isBroadcast));
                 }, 1000);
+                this.users[message.sender] = extWs;
             });
             ws.send(this.createMessage('Hi there, I am a WebSocket server'));
-            ws.on('error', (err) => {
-                console.warn(`Client disconnected - reason: ${err}`);
-            });
         });
-        setInterval(() => {
-            this.wss.clients.forEach((ws) => {
-                const extWs = ws;
-                if (!extWs.isAlive)
-                    return ws.terminate();
-                extWs.isAlive = false;
-                ws.ping(null, undefined);
-            });
-        }, 10000);
     }
     createMessage(content, isBroadcast = false, sender = 'NS') {
         return JSON.stringify(new message_1.Message(content, isBroadcast, sender));
