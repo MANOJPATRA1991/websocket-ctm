@@ -37,8 +37,7 @@ export class CTMRoute {
                         'Authorization': 'Basic ' + base64.encode(username + ":" + password)
                     },
                     redirect: "follow",
-                    referrer: "no-referrer",
-                    body: JSON.stringify({})
+                    referrer: "no-referrer"
                 })
                 .then(response => {
                     console.log(response.json());
