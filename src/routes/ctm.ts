@@ -42,7 +42,10 @@ export class CTMRoute {
                 })
                 .then(response => {
                     console.log(response.json());
-                });
+
+                    return response.json();
+                })
+                .then(d => console.log(d));
             }
 
             res.status(200).json({
